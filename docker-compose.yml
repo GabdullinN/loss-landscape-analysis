@@ -1,0 +1,57 @@
+services:
+  lla-cpu:
+    build: ./build
+    image: lla-cpu
+    container_name: lla-container
+    volumes:
+      - ./src:/src/
+    tty: true
+
+  lla-cpu-jup:
+    build: ./build-jup
+    image: lla-cpu-jup
+    container_name: lla-container
+    environment:
+      - JUPYTER_TOKEN=land
+    ports:
+      - "7088:8888"
+    volumes:
+      - ./src:/src/
+    tty: true
+
+  lla-gpu:
+    build: ./build
+    image: lla-gpu
+    container_name: lla-container
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./src:/src/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              count: 1
+    tty: true
+
+  lla-gpu-jup:
+    build: ./build-jup
+    image: lla-gpu-jup
+    container_name: lla-container
+    environment:
+      - JUPYTER_TOKEN=land
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "7089:8888"
+    volumes:
+      - ./src:/src/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              count: 1
+    tty: true

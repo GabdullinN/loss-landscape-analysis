@@ -1,0 +1,13 @@
+/src/__pycache__/
+.ipynb_checkpoints
+**/*.ipynb_checkpoints/
+**/__pycache__/
+/src/MNIST/
+/src/datasets/
+/src/train_logs/
+/src/viz_results/
+/src/analysis_results/
+/src/viz_dir/
+/src/res_dir/
+/src/example_viz_results/
+/src/example_analysis_results/
