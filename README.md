@@ -172,7 +172,17 @@ Any LLA function that requires Hessian analysis will throw an error at the initi
 
 If you use this library in your research, please cite the following paper:
 
-[1] {link to arxiv paper LLA}
+```
+@misc{lla,
+title={Investigating generalization capabilities of neural networks by means of loss landscapes and Hessian analysis}, 
+author={Nikita Gabdullin},
+year={2024},
+url={https://arxiv.org/abs/2412.10146}}
+```
+
+[1] N. Gabdullin, “Investigating generalization capabilities of neural networks by
+means of loss landscapes and hessian analysis,” 2024. [Online]. Available: https:
+//arxiv.org/abs/2412.10146
 
 **License**
 
