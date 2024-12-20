@@ -122,7 +122,7 @@ Whereas viz_lla allows to access some Hessian analysis capabilities such as HESD
 from src_lla import viz_esd
 ```
 
-This function returns a list of four elements which correspond to eigenvalues, eigenvectors, trace, re, Khn (see [1] for details). Example calls of viz_esd (see viz_lla_esd-readme.md for the complete list of options):
+This function returns a list of five elements which correspond to eigenvalues, eigenvectors, trace, re, Khn (see [1] for details). Example calls of viz_esd (see viz_lla_esd-readme.md for the complete list of options):
 
 ```python
 # top 2 eigenvalues and eigenvectors
