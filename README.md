@@ -79,7 +79,7 @@ In addition to HESD plots we provide options for HESD criteria calculation, plea
 
 **1. Importing LLA into existing project**
 
-LLA can be imported by copying src/src_lla into another project's directory. For user's convenience all main LLA capabilities can be accessed using functions viz_lla and viz_esd. You can check import_example.ipynb too see their application to the case of LeNet trained on MNIST.
+LLA can be imported by copying src/src_lla into another project's directory. For user's convenience all main LLA capabilities can be accessed using functions viz_lla and viz_esd. You can check import_example.ipynb to see their application to the case of LeNet trained on MNIST.
 
 **1.1. Loss landscape visualization with viz_lla**
 
