@@ -18,7 +18,7 @@ Input arguments of functions that can be imported from LLA library
 - cap_loss - maximum value at which loss is capped (clipped), default None 
 - viz_dev - whether to use 'all_modes' regime, default False
 - raa - layer number for 'freeze' regime, default None
-- viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default None (uses default directory './viz_dir') 
+- viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default None (uses default directory './viz_results') 
 - res_dir - path to directory where hessian analysis results will be saved, default None (uses default directory './analysis_results') 
 - eval_hessian - whether to calculate Hessian Eigenvalue Spectral Density, default False
 - calc_crit - whether to calculate Hessian criteria, default False
@@ -45,7 +45,7 @@ Input arguments of functions that can be imported from LLA library
 - calc_crit - whether to calculate Hessian criteria, default False
 - to_viz - whether to show visualization results with plt.show(), applicable to Jupyter notebooks, default False
 - to_save - whether to save the results (plots, spectra, criteria etc), default True
-- viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default None (uses default directory './viz_dir') 
+- viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default None (uses default directory './viz_results') 
 - res_dir - path to directory where hessian analysis results will be saved, default None (uses default directory './analysis_results')
 - exp_name - experiment name (tag) that will be used to name output images, esd plots, logs, default 'esd_example'
 
