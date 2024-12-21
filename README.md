@@ -166,7 +166,7 @@ metric = CustomLoss(x_plot, y_plot, device)
 
 **3. Known peculiarities**
 
-Any LLA function that requires Hessian analysis will throw an error at the initial call. It warns about the possible memory leak, but it can be ignored since the library ensures that no memory leak occurs when viz_lla or viz_esd are used. **However, this is not guaranteed** if the user manually calls only some components of LLA functions, see, for instance, the description of hessian_calc.reset() method in src_lla/hessian. 
+Any LLA function that requires Hessian analysis will throw a Warning at the initial call. It warns about the possible memory leak, but it can be ignored since the library ensures that no memory leak occurs when viz_lla or viz_esd are used. **However, this is not guaranteed** if the user manually calls only some components of LLA functions, see, for instance, the description of hessian_calc.reset() method in src_lla/hessian. 
 
 **Referencing LLA**
 
