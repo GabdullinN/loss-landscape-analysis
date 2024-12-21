@@ -18,7 +18,7 @@ List of arguments for example scripts lla_train.py and lla_eval.py.
 -nm, --norm - type of normalization for direction vectors, allowed [None, weight, layer, model, filter], default None\
 -od, --order - L1 (1) or L2 (2) normalization for types layer, model, filter, default 2\
 -lc, --losscap - maximum value at which loss is capped (clipped), default None \
---nkh, - power for Hessian criterion Khn calculation, default 0.5 \
+--nkh - power for Hessian criterion Khn calculation, default 0.5 \
 -vd, --viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default ./viz_results \
 -ld, --log_dir - path to directory where train logs will be saved, default ./train_logs \
 -rd, --res_dir - path to directory where hessian analysis results will be saved, default ./analysis_results \
