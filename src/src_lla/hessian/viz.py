@@ -129,7 +129,7 @@ def esd_plot(eigenvalues, weights,to_save=False,to_viz=True,exp_name='esd_exampl
         return density, segments
 
 
-def eval_save_esd(hessian,n_iter=100,n_v=1,max_v=10,to_save=False,to_viz=True,exp_name='esd_example',
+def eval_save_esd(hessian,n_iter=100,n_v=1,max_v=10,mask_idx=None,to_save=False,to_viz=True,exp_name='esd_example',
                   viz_dir=default_viz_dir,res_dir=default_res_dir,calc_crit=False,n_kh=0.5):
 
     """
@@ -139,6 +139,7 @@ def eval_save_esd(hessian,n_iter=100,n_v=1,max_v=10,to_save=False,to_viz=True,ex
     :n_iter - max number of iterations for esd approximation
     :n_v - number of esd evaluation runs
     :max_v - max number of saved orthogonal vectors for esd approximation (increases required memory!!!)
+    :mask_idx - list of layer indexes to keep for hessian calcualtions
     :to_save - whether to save the results in viz_dir
     :to_viz - whether to show to plots (in notebook)
     :viz_dir - path to directory for output files
@@ -146,7 +147,7 @@ def eval_save_esd(hessian,n_iter=100,n_v=1,max_v=10,to_save=False,to_viz=True,ex
     returns tuple re, Khn or None, None
     """
     
-    eigs, weights = hessian.esd_calc(n_iter=n_iter,n_v=n_v,max_v=max_v)
+    eigs, weights = hessian.esd_calc(n_iter=n_iter,n_v=n_v,max_v=max_v,mask_idx=mask_idx)
     esd_plot(eigs, weights, to_save=to_save,to_viz=to_viz,viz_dir=viz_dir,exp_name=exp_name)
 
     if calc_crit:
@@ -164,7 +165,7 @@ def eval_save_esd(hessian,n_iter=100,n_v=1,max_v=10,to_save=False,to_viz=True,ex
 
 
 def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=False,trace_n_iter=100,trace_tol=1e-3,
-            esd=True,esd_n_iter=100,n_v=1,max_v=10,to_save=False,
+            esd=True,esd_n_iter=100,n_v=1,max_v=10,mask_idx=None,to_save=False, 
             to_viz=True,exp_name='esd_example',viz_dir=default_viz_dir,res_dir=default_res_dir,calc_crit=False,n_kh=0.5):
 
     """
@@ -182,6 +183,7 @@ def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=
     :esd_n_iter - max number of iterations for esd approximation
     :n_v - number of esd evaluation runs
     :max_v - max number of saved orthogonal vectors for esd approximation (increases required memory!!!)
+    :mask_idx - list of layer indexes to keep for hessian calcualtions
     :to_save - whether to save the results (into viz_dir for plots and res_dir for criteria)
     :to_viz - whether to show to plots (in notebook)
     :viz_dir - path to directory to save output plots
@@ -196,8 +198,14 @@ def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=
     results = [None,None,None,None,None] # eigenvalues, eigenvectors, trace, re, Khn
     hessian = hessian_calc(model,metric)
 
+    ### check if mask_idx is not list, or negative values in mask_idx, or values greater than the number of model layers are present
+    if mask_idx is not None and (type(mask_idx) is not list or len([el for el in mask_idx if el<0])>0 or len([el for el in mask_idx if el>len(hessian.params)])>0):
+        print('Warning! Invalid indexes encountered in mask index list, only positive numbers less than max model layer number are allowed!')
+        print('Setting mask_idx to None')
+        mask_idx = None
+    
     if esd:
-        re, Khn = eval_save_esd(hessian,n_iter=esd_n_iter,n_v=n_v,max_v=max_v,to_save=to_save,
+        re, Khn = eval_save_esd(hessian,n_iter=esd_n_iter,n_v=n_v,max_v=max_v,mask_idx=mask_idx,to_save=to_save,
                             to_viz=to_viz,viz_dir=viz_dir,res_dir=res_dir,exp_name=exp_name,calc_crit=calc_crit,n_kh=n_kh)
 
         if calc_crit: # this is redundant since eval_save_esd will return None, None if not calc_crit
@@ -205,12 +213,12 @@ def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=
             results[4] = Khn
 
     if eigs:
-        res = hessian.eigs_calc(top_n=top_n,n_iter=eigs_n_iter,tol=eigs_tol)
+        res = hessian.eigs_calc(top_n=top_n,n_iter=eigs_n_iter,tol=eigs_tol,mask_idx=mask_idx)
         results[0] = res[0]
         results[1] = res[1]
         
     if trace:
-        results[2] = hessian.tr_calc(n_iter=trace_n_iter,tol=trace_tol)
+        results[2] = hessian.tr_calc(n_iter=trace_n_iter,tol=trace_tol,mask_idx=mask_idx)
         
     hessian.reset()
     

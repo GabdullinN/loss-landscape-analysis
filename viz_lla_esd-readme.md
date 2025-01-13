@@ -43,6 +43,7 @@ Input arguments of functions that can be imported from LLA library
 - max_v - maximum number of ortagonal vectors saved during esd calculation, default 10 (Important: high max_v might substantially increase memory requirements) 
 - n_kh - power for Hessian criterion Khn calculation, default 0.5 
 - calc_crit - whether to calculate Hessian criteria, default False
+- mask_idx - list of model layer indexes used to for hessian evaluation, default None 
 - to_viz - whether to show visualization results with plt.show(), applicable to Jupyter notebooks, default False
 - to_save - whether to save the results (plots, spectra, criteria etc), default True
 - viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default None (uses default directory './viz_results') 

@@ -6,5 +6,5 @@
 # (c) Kryptonite, 2024
 
 
-from src_lla.hessian.utils import list_prod, update_vect, list_norm, get_params_grads, ortho_vect, hes_prod
+from src_lla.hessian.utils import list_prod, update_vect, list_norm, list_mul, get_params_grads, ortho_vect, hes_prod, gen_mask_tens
 from src_lla.hessian.hessian import hessian_calc

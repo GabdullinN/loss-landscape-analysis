@@ -11,7 +11,7 @@ import numpy as np
 
 from src_lla.loss_landscapes.model_interface.model_wrapper import wrap_model
 from src_lla.loss_landscapes.model_interface.model_parameters import rand_u_like, rand_n_like, orthogonal_to
-from src_lla.hessian.utils import list_prod, update_vect, list_norm, get_params_grads, ortho_vect, hes_prod
+from src_lla.hessian.utils import list_prod, update_vect, list_norm, get_params_grads, ortho_vect, hes_prod, gen_mask_tens
 
 
 def tol_check(a1,a2,a3,c,tol):
@@ -61,18 +61,24 @@ class hessian_calc():
                 p.grad.zero_()
         
 
-    def eigs_calc(self, n_iter=100, tol=1e-3, top_n=1):
+    def eigs_calc(self, n_iter=100, tol=1e-3, top_n=1,mask_idx = None):
         """
         estiamates top_n eigenvalues of the hessian using power iteration
         
         :n_iter - number of iterations
         :tol - tolerance to compare eigenvalues on consecutive iterations
         :top_n - number of top eigenvalues to compute
+        :mask_idx - list of tensor indexes to keep
+        returns eigenvalues and eigenvectors
         """
 
         eigenvalues = []
         eigenvectors = []
         c = 1e-6 # for numerical stability
+        
+        mask = None
+        if mask_idx is not None:
+            mask = gen_mask_tens(mask_idx,self.params)
 
         for _ in range(top_n):
 
@@ -88,7 +94,7 @@ class hessian_calc():
                 self.model.zero_grad()
 
                 # calculating eigenvalues via hessian
-                H = hes_prod(self.grads, self.params,v)
+                H = hes_prod(self.grads, self.params,v,mask=mask)
                 tmp_eigenvalue = list_prod(H, v).cpu().item()
                 v = list_norm(H)
 
@@ -104,9 +110,54 @@ class hessian_calc():
             eigenvectors.append(v)
 
         return eigenvalues, eigenvectors
+        
+        
+    def Rademacher_vect(self):
+        """
+        Generate Rademacher random variables (a random vector of 0s and 1s with 0s converted to -1s)
+        """
+        v = [torch.randint_like(p, high=2).to(self.device) for p in self.params]
+        for v_i in v:
+            v_i[v_i == 0] = -1
 
+        return v
+    
+    
+    def tr_calc(self, n_iter=100, tol=1e-3,mask_idx=None):
+        """
+        Trace computation using Hutchinson's method
+        
+        :n_iter - maximum number of iterations 
+        :tol - tolerance
+        :mask_idx - list of tensor indexes to keep
+        """
 
-    def Lacsoz_step(self,step_num,vs,ws,alphas,betas):
+        trace_list = []
+        prev_trace = np.zeros(0)
+        c = 1e-6 # for numerical stability
+        
+        mask = None
+        if mask_idx is not None:
+            mask = gen_mask_tens(mask_idx,self.params)
+
+        for i in range(n_iter):
+            self.model.zero_grad()
+            v = self.Rademacher_vect()
+
+            H = hes_prod(self.grads, self.params,v,mask=mask)
+            cur_trace = list_prod(H, v)
+            trace_list.append(cur_trace.cpu().item())
+            done = tol_check(np.mean(trace_list),prev_trace,prev_trace,c,tol)
+            #if abs(np.mean(trace_list) - prev_trace) / (abs(prev_trace) + c) < tol:
+            if done:
+                return np.mean(trace_list)
+            else:
+                prev_trace = np.mean(trace_list)
+
+        return np.mean(trace_list)
+    
+    
+    def Lacsoz_step(self,step_num,vs,ws,alphas,betas,mask=None):
         """
         step of SLQ for internal use by esd_calc
         """
@@ -131,7 +182,7 @@ class hessian_calc():
         # w and alpha update
         self.model.zero_grad()
         w_prime = [torch.zeros(p.shape).to(self.device) for p in self.params]
-        w_prime = hes_prod(self.grads, self.params,v)
+        w_prime = hes_prod(self.grads, self.params,v,mask=mask)
         alpha = list_prod(w_prime, v)
         alphas.append(alpha.cpu().item())
         w = update_vect(w_prime, v, alpha=-alpha)
@@ -142,57 +193,22 @@ class hessian_calc():
         
         ws.append(w)
         
-        
-    def Rademacher_vect(self):
-        """
-        Generate Rademacher random variables (a random vector of 0s and 1s with 0s converted to -1s)
-        """
-        v = [torch.randint_like(p, high=2).to(self.device) for p in self.params]
-        for v_i in v:
-            v_i[v_i == 0] = -1
 
-        return v
-    
-    
-    def tr_calc(self, n_iter=100, tol=1e-3):
-        """
-        Trace computation using Hutchinson's method
-        
-        :n_iter - maximum number of iterations 
-        :tol - tolerance
-        """
-
-        trace_list = []
-        prev_trace = np.zeros(0)
-        c = 1e-6 # for numerical stability
-
-        for i in range(n_iter):
-            self.model.zero_grad()
-            v = self.Rademacher_vect()
-
-            H = hes_prod(self.grads, self.params,v)
-            cur_trace = list_prod(H, v)
-            trace_list.append(cur_trace.cpu().item())
-            done = tol_check(np.mean(trace_list),prev_trace,prev_trace,c,tol)
-            #if abs(np.mean(trace_list) - prev_trace) / (abs(prev_trace) + c) < tol:
-            if done:
-                return np.mean(trace_list)
-            else:
-                prev_trace = np.mean(trace_list)
-
-        return np.mean(trace_list)
-        
-
-    def esd_calc(self, n_iter=100, n_v=1,max_v=10):
+    def esd_calc(self, n_iter=100, n_v=1,max_v=10,mask_idx=None):
         """
         estimates eigenvalue spectral decomposition (esd) using stochastic lanczos quadrature (SLQ)
         
         :n_iter - number of iterations
         :n_v - number of SLQ runs
         :max_v - max number of vectors stored to create new orthogonal vects*
+        :mask_idx - list of tensor indexes to keep
         *each vect has size of model weights, therefore memory requirements of one evaluation are model_size*(1+max_v). 
         *High max_v value may lead to memory issues
         """
+        
+        mask = None
+        if mask_idx is not None:
+            mask = gen_mask_tens(mask_idx,self.params)
 
         all_eigs = []
         all_weights = []
@@ -209,7 +225,7 @@ class hessian_calc():
             
             # starting iterations
             for cur_step in range(n_iter):
-                self.Lacsoz_step(cur_step,vs,ws,alphas,betas)
+                self.Lacsoz_step(cur_step,vs,ws,alphas,betas,mask=mask)
                     
                 # removing extra vects due to memory considerations 
                 if len(vs) > max_v+1:

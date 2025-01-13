@@ -41,6 +41,7 @@ def main(args):
     seed = args.seed
     calc_crit = args.calc_crit
     n_kh = args.nkh
+    mask_idx = args.mask_idx
 
     if weight_path == 'None':
         weight_path = None
@@ -88,13 +89,13 @@ def main(args):
 
     # random init esd
     cur_name = 'esd_init_' + exp_name
-    res = viz_esd(model,metric,esd=True,eigs=True,trace=True,calc_crit=True,to_save=True,to_viz=False,res_dir=res_dir,viz_dir=viz_dir,exp_name=cur_name)
+    res = viz_esd(model,metric,mask_idx=mask_idx,esd=True,eigs=True,trace=True,calc_crit=True,to_save=True,to_viz=False,res_dir=res_dir,viz_dir=viz_dir,exp_name=cur_name)
     
     #pretrained esd
     model.load_state_dict(torch.load('example_weights/lenet_example.pth',map_location=device)) # load example pre-trained weights
     model.to(device)
     cur_name = 'esd_pretrained_' + exp_name
-    res = viz_esd(model,metric,esd=True,eigs=True,trace=True,calc_crit=True,to_save=True,to_viz=False,res_dir=res_dir,viz_dir=viz_dir,exp_name=cur_name)
+    res = viz_esd(model,metric,mask_idx=mask_idx,esd=True,eigs=True,trace=True,calc_crit=True,to_save=True,to_viz=False,res_dir=res_dir,viz_dir=viz_dir,exp_name=cur_name)
             
     
 if __name__ == '__main__':
@@ -116,6 +117,7 @@ if __name__ == '__main__':
     p.add_argument('-od', '--order', type=int, required=False, default=2, help="normalization order for filter,model,layer norm, default = 2 (L2 norm)")
     p.add_argument('-lc', '--losscap', type=float, required=False, default=None, help="loss cap (clip) value, default = None")
     p.add_argument('--nkh', type=float, required=False, default=0.5, help="power for hessian criterion Khn calculation, default = 0.5")
+    p.add_argument('-midx', '--mask_idx', type=int, nargs="*", required=False, default=None, help="list of layer indexes to keep or hessian calculations, default = None")
     p.add_argument('-vd', '--viz_dir', type=str, required=False, default='viz_results', help="dir to save landscape images, default = viz_results")
     p.add_argument('-rd', '--res_dir', type=str, required=False, default='analysis_results', help="dir to save hessian criteria, default = analysis_results")
     p.add_argument('-ld', '--log_dir', type=str, required=False, default='train_logs', help="dir to save train logs, default = train_logs")
