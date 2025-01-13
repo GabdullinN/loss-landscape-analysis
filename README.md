@@ -6,6 +6,14 @@ Disclaimer: LLA is still in development, which means existing functions might ch
 
 <p align="center"><img src="/figure/figure_1.png" width="65%"/></p>
 
+**Main Features**
+
+* GPU support for loss landscape plotting and hessian analysis;
+* random, adam, and hessian axes for loss landscape plotting;
+* multiple weight update equations and direction vector normalization options;
+* weight freezing for model layers;
+* hessian top eigenvalues and eigenvectors, trace, eigenvalue spectral density calculation; block-wise calculation options.
+
 **Requirements**
 
 * Python>=3.8.10
@@ -170,8 +178,6 @@ Any LLA function that requires Hessian analysis will throw a Warning at the init
 
 **Referencing LLA**
 
-If you use this library in your research, please cite the following paper:
-
 ```
 @misc{lla,
 title={Investigating generalization capabilities of neural networks by means of loss landscapes and Hessian analysis}, 
@@ -183,6 +189,7 @@ url={https://arxiv.org/abs/2412.10146}}
 [1] N. Gabdullin, “Investigating generalization capabilities of neural networks by
 means of loss landscapes and hessian analysis,” 2024. [Online]. Available: https:
 //arxiv.org/abs/2412.10146
+
 
 **License**
 
