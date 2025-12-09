@@ -3,7 +3,7 @@
 
 # This library is distributed under Apache 2.0 license
 
-# (c) Kryptonite, 2024
+# (c) Kryptonite, 2024-2025
 
 import copy
 import argparse
@@ -22,6 +22,8 @@ from src_lla import viz_lla
 from src_lla.loaders.src_LeNet import *
 #from src_lla.loaders.src_mlp_mnist import *
 
+warnings.filterwarnings("ignore", category=UserWarning, message=".*create_graph.*")
+
 
 def main(args):
     
@@ -30,7 +32,7 @@ def main(args):
     allowed_order = [1,2]
     
     if args.cuda:
-        print('checking if cuda is available...')
+        print('Checking if cuda is available...')
         device = "cuda" if torch.cuda.is_available() else "cpu"
         if device == 'cpu':
             print('Warning! --cuda was specified but cuda is not available!')

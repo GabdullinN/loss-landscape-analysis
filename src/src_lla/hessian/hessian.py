@@ -2,7 +2,7 @@
 
 # This library is distributed under Apache 2.0 license
 
-# (c) Kryptonite, 2024
+# (c) Kryptonite, 2024-2025
 
 
 import torch
@@ -39,7 +39,7 @@ class hessian_calc():
 
         # creating computation graph for data in metric and getting grad info
         loss, outputs = self.metric(None,model=self.model,use_wrapper=False,return_pred=True)
-        loss.backward(create_graph=True) # torch.autograd.grad(...) is recommended instead
+        loss.backward(create_graph=True)
         self.params, self.grads = get_params_grads(self.model)
 
 

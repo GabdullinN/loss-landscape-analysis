@@ -7,7 +7,7 @@
 
 # This library is distributed under Apache 2.0 license
 
-# (c) Kryptonite, 2024
+# (c) Kryptonite, 2024-2025
 
 """
 Basic linear algebra operations as defined on the parameter sets of entire models.

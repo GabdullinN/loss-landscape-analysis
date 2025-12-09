@@ -2,7 +2,7 @@
 
 # This library is distributed under Apache 2.0 license
 
-# (c) Kryptonite, 2024
+# (c) Kryptonite, 2024-2025
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +15,23 @@ from src_lla.hessian import hessian_calc
 # TODO: take this from config or allow user input with flag
 default_viz_dir = 'viz_results'
 default_res_dir = 'analysis_results'
+
+
+def mp_hesd_check(Ct):
+    """
+    Checks hesd type based on Ct value, see https://arxiv.org/abs/2504.17618 for details
+    
+    :Ct - value of Ct criterion
+    returns True for MP-HESD and False for MN-HESD
+    
+    """
+    
+    threshold = -0.6
+    
+    if Ct >= threshold:
+        return True
+    else:
+        return False
 
 
 def hessian_criteria(eigenvalues,weights,n):
@@ -34,11 +51,14 @@ def hessian_criteria(eigenvalues,weights,n):
 
     re = []
     Khn = []
+    Ct = []
     
     for i in range(len(eigenvalues)):
         eigs = np.array(eigenvalues[i])
-    
-        re.append(np.abs(np.min(eigs)/np.max(eigs)))
+        
+        cur_Ct = np.min(eigs)/np.max(eigs)
+        Ct.append(cur_Ct)
+        re.append(np.abs(cur_Ct))
         
         eig_ws = np.real(np.array(weights[i]))
         eig_pos = np.sum(np.power(eigs[eigs>0]*eig_ws[eigs>0],n))
@@ -48,8 +68,9 @@ def hessian_criteria(eigenvalues,weights,n):
 
     re = np.mean(np.array(re), axis=0)
     Khn = np.mean(np.array(Khn), axis=0)
-
-    return re, Khn
+    Ct = np.mean(np.array(Ct), axis=0)
+    
+    return re, Khn, Ct
 
 
 def gaussian_conv(x, s2):
@@ -144,29 +165,29 @@ def eval_save_esd(hessian,n_iter=100,n_v=1,max_v=10,mask_idx=None,to_save=False,
     :to_viz - whether to show to plots (in notebook)
     :viz_dir - path to directory for output files
     :exp_name - tag of experiment used in names of output files
-    returns tuple re, Khn or None, None
+    returns tuple re, Khn, Ct or None, None, None
     """
     
     eigs, weights = hessian.esd_calc(n_iter=n_iter,n_v=n_v,max_v=max_v,mask_idx=mask_idx)
     esd_plot(eigs, weights, to_save=to_save,to_viz=to_viz,viz_dir=viz_dir,exp_name=exp_name)
 
     if calc_crit:
-        re, Khn = hessian_criteria(eigs,weights,n_kh)
+        re, Khn, Ct = hessian_criteria(eigs,weights,n_kh)
 
         if to_save:
             if not os.path.exists(res_dir):
                 os.makedirs(res_dir)
             with open(os.path.join(res_dir,'hessian_criteria_{}.log'.format(exp_name)), 'a') as log_file:
-                    log_file.write('re: {}, Kh{}: {}\n'.format(re,n_kh,Khn))
+                    log_file.write('re: {}, Kh{}: {}, Ct: {}\n'.format(re,n_kh,Khn,Ct))
         
-        return re, Khn
+        return re, Khn, Ct
 
-    return None, None
+    return None, None, None
 
 
 def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=False,trace_n_iter=100,trace_tol=1e-3,
             esd=True,esd_n_iter=100,n_v=1,max_v=10,mask_idx=None,to_save=False, 
-            to_viz=True,exp_name='esd_example',viz_dir=default_viz_dir,res_dir=default_res_dir,calc_crit=False,n_kh=0.5):
+            to_viz=True,exp_name='esd_example',viz_dir=default_viz_dir,res_dir=default_res_dir,calc_crit=False,n_kh=0.5,check_hesd_type=False):
 
     """
     a funtions that collects different operations with hessian: eigs and esd
@@ -193,9 +214,12 @@ def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=
     """
 
     if calc_crit and not esd:
-        raise AttributeError('Hessian criteria calculation is requested but esd calculation is not! Please call viz_esd with esd=True.')
+        raise AttributeError('Hessian criteria calculation is requested but esd calculation is disabled! Please call viz_esd with esd=True.')
+        
+    if check_hesd_type and not calc_crit:
+        raise AttributeError('HESD type check is requested but Hessian criteria calculation is disabled! Please call viz_esd with calc_crit=True.')
 
-    results = [None,None,None,None,None] # eigenvalues, eigenvectors, trace, re, Khn
+    results = [None,None,None,None,None,None,None] # eigenvalues, eigenvectors, trace, re, Khn, Ct, HESD_type
     hessian = hessian_calc(model,metric)
 
     ### check if mask_idx is not list, or negative values in mask_idx, or values greater than the number of model layers are present
@@ -205,12 +229,15 @@ def viz_esd(model,metric,eigs=False,top_n=2,eigs_n_iter=100,eigs_tol=1e-3,trace=
         mask_idx = None
     
     if esd:
-        re, Khn = eval_save_esd(hessian,n_iter=esd_n_iter,n_v=n_v,max_v=max_v,mask_idx=mask_idx,to_save=to_save,
+        re, Khn, Ct = eval_save_esd(hessian,n_iter=esd_n_iter,n_v=n_v,max_v=max_v,mask_idx=mask_idx,to_save=to_save,
                             to_viz=to_viz,viz_dir=viz_dir,res_dir=res_dir,exp_name=exp_name,calc_crit=calc_crit,n_kh=n_kh)
 
-        if calc_crit: # this is redundant since eval_save_esd will return None, None if not calc_crit
+        if calc_crit: 
             results[3] = re
             results[4] = Khn
+            results[5] = Ct
+            if check_hesd_type:
+                results[6] = mp_hesd_check(Ct)
 
     if eigs:
         res = hessian.eigs_calc(top_n=top_n,n_iter=eigs_n_iter,tol=eigs_tol,mask_idx=mask_idx)

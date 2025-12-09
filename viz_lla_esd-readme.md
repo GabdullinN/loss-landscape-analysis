@@ -49,6 +49,7 @@ Input arguments of functions that can be imported from LLA library
 - viz_dir - path to directory where loss landscapes and esd plots in png format will be saved, default None (uses default directory './viz_results') 
 - res_dir - path to directory where hessian analysis results will be saved, default None (uses default directory './analysis_results')
 - exp_name - experiment name (tag) that will be used to name output images, esd plots, logs, default 'esd_example'
+- check_hesd_type - whether to check HESD type, returns True for MP and False for MN, default False
 
 Please note that eigenvalues, trace, and Hessian criteria are saved as text .log files, whereas eigenvectors are saved as python objects using pickle.
 

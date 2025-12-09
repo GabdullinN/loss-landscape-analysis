@@ -2,7 +2,7 @@
 
 # This library is distributed under Apache 2.0 license
 
-# (c) Kryptonite, 2024
+# (c) Kryptonite, 2024-2025
 
 import os
 import numpy as np

@@ -38,8 +38,10 @@ The following arguments can be used as {service_name}, which differ by GPU and J
 * lla-gpu
 * lla-gpu-jup
 
+Please note that services are mutually exclusive and an existing service has to be removed with docker compose down before starting a different one. 
+
 There are two ways of working with the project
-* Work in container via terminal: docker exec -it lla_container /bin/bash
+* Work in container via terminal: docker exec -it lla-container /bin/bash
 * Log into Jupyter Lab server: http:{server}:{your_port}, password **land**
 
 **Examples**
@@ -56,7 +58,7 @@ This example may take some time when running on CPU. You can also run a faster e
 docker exec -it lla-container /bin/bash examples-fast.sh
 ```
 
-We provide two scripts lla_train.py and lla_eval.py for training and evaluation of neural networks, respectively. You can run those to test library's capabilities with, for example
+We provide two scripts lla_train.py and lla_eval.py for training and evaluation of neural networks, respectively. You can run those in terminal in the container to test library's capabilities with, for example
 
 ```python
 # use predefined plot settings with "all_modes", hessian axes, HESD, hessian criteria
@@ -130,7 +132,7 @@ Whereas viz_lla allows to access some Hessian analysis capabilities such as HESD
 from src_lla import viz_esd
 ```
 
-This function returns a list of five elements which correspond to eigenvalues, eigenvectors, trace, re, Khn (see [1] for details). Example calls of viz_esd (see viz_lla_esd-readme.md for the complete list of options):
+This function returns a list of seven elements which correspond to eigenvalues, eigenvectors, trace, re, Khn, Ct, and HESD type (see [1] and [2] for details). Example calls of viz_esd (see viz_lla_esd-readme.md for the complete list of options):
 
 ```python
 # top 2 eigenvalues and eigenvectors
@@ -172,28 +174,34 @@ model = ModelInit(device=device)
 metric = CustomLoss(x_plot, y_plot, device)
 ```
 
-**3. Known peculiarities**
-
-Any LLA function that requires Hessian analysis will throw a Warning at the initial call. It warns about the possible memory leak, but it can be ignored since the library ensures that no memory leak occurs when viz_lla or viz_esd are used. **However, this is not guaranteed** if the user manually calls only some components of LLA functions, see, for instance, the description of hessian_calc.reset() method in src_lla/hessian. 
-
 **Referencing LLA**
 
 ```
 @misc{lla,
-title={Investigating generalization capabilities of neural networks by means of loss landscapes and Hessian analysis}, 
+title={Investigating generalization capabilities of neural networks by means of 
+loss landscapes and Hessian analysis}, 
 author={Nikita Gabdullin},
 year={2024},
 url={https://arxiv.org/abs/2412.10146}}
+
+@misc{hesdtype,
+title={The effects of Hessian eigenvalue spectral density type on the applicability of 
+Hessian analysis to generalization capability assessment of neural networks}, 
+author={Nikita Gabdullin},
+year={2025},
+url={https://arxiv.org/abs/2504.17618}}
 ```
 
 [1] N. Gabdullin, “Investigating generalization capabilities of neural networks by
-means of loss landscapes and hessian analysis,” 2024. [Online]. Available: https:
-//arxiv.org/abs/2412.10146
+means of loss landscapes and hessian analysis,” 2024. [Online]. Available: https://arxiv.org/abs/2412.10146
 
+[2] N. Gabdullin, “The effects of Hessian eigenvalue spectral density type on the 
+applicability of Hessian analysis to generalization capability assessment of neural 
+networks,” 2024. [Online]. Available: https: https://arxiv.org/abs/2504.17618
 
 **License**
 
-Copyright 2024 Kryptonite
+Copyright 2024-2025 Kryptonite
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
